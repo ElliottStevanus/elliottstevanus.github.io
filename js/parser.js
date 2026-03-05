@@ -1,6 +1,6 @@
 document.addEventListener("DOMContentLoaded", function () {
 
-    fetch("data/dorian_gray.xml")
+    fetch("dorian_gray.xml")
         .then(response => response.text())
         .then(str => {
 
