@@ -1,6 +1,6 @@
 document.addEventListener("DOMContentLoaded", function () {
 
-    fetch("dorian_gray.xml") // file is at the repo root
+    fetch("dorian_gray.xml") // file is at the repo root 
         .then(response => {
             if (!response.ok) {
                 throw new Error(`Failed to fetch dorian_gray.xml: ${response.status} ${response.statusText}`);
