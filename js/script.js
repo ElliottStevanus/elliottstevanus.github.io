@@ -1,6 +1,7 @@
 document.addEventListener("DOMContentLoaded", function () {
 
     let figureID = 0;
+    let figures = [];
 
     fetch("Text/dorian_gray.xml")
         .then(response => {
@@ -18,12 +19,10 @@ document.addEventListener("DOMContentLoaded", function () {
 
             let output = "";
 
-            // Normalize spacing so regex doesn't break across XML line breaks
             function normalizeText(text) {
                 return text.replace(/\s+/g, " ");
             }
 
-            // Figurative language patterns
             const patterns = [
 
                 { regex: /\bas\s+[a-zA-Z'-]+\s+as\s+[a-zA-Z'-]+\b/gi, tag: "simile" },
@@ -51,7 +50,11 @@ document.addEventListener("DOMContentLoaded", function () {
 
                         const id = "figure-" + figureID;
 
-                        addToIndex(p.tag, match, id);
+                        figures.push({
+                            type: p.tag,
+                            text: match,
+                            id: id
+                        });
 
                         return `<${p.tag} id="${id}">${match}</${p.tag}>`;
 
@@ -75,41 +78,48 @@ document.addEventListener("DOMContentLoaded", function () {
         });
 
 
-    // FUNCTION TO ADD ITEMS TO THE INDEX PANEL
-    function addToIndex(type, text, id){
+    // SEARCH SYSTEM
+    const searchBox = document.getElementById("figure-search");
+    const resultsList = document.getElementById("search-results");
 
-        let listID = "";
+    if(searchBox){
 
-        if(type === "simile"){
-            listID = "simile-list";
-        }
+        searchBox.addEventListener("input", function(){
 
-        if(type === "metaphor"){
-            listID = "metaphor-list";
-        }
+            const query = this.value.toLowerCase();
 
-        const list = document.getElementById(listID);
+            resultsList.innerHTML = "";
 
-        if(!list) return;
+            if(query.length === 0) return;
 
-        const li = document.createElement("li");
+            figures.forEach(fig => {
 
-        li.textContent = text;
+                if(fig.text.toLowerCase().includes(query)){
 
-        li.addEventListener("click", function(){
+                    const li = document.createElement("li");
 
-            const target = document.getElementById(id);
+                    li.textContent = `${fig.type}: ${fig.text}`;
 
-            if(target){
-                target.scrollIntoView({
-                    behavior: "smooth",
-                    block: "center"
-                });
-            }
+                    li.addEventListener("click", function(){
+
+                        const target = document.getElementById(fig.id);
+
+                        if(target){
+                            target.scrollIntoView({
+                                behavior: "smooth",
+                                block: "center"
+                            });
+                        }
+
+                    });
+
+                    resultsList.appendChild(li);
+
+                }
+
+            });
 
         });
-
-        list.appendChild(li);
 
     }
 
