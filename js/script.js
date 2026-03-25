@@ -64,8 +64,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
                 });
 
-                output += `<p>${text}</p>;
-
+output += `<p>${text}</p>`;
             }
 
             document.getElementById("novel-text").innerHTML = output;
