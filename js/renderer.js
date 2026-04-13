@@ -1,29 +1,19 @@
-// renderer.js
+export function runXSLT(path, xmlDoc, container) {
 
-export function renderReadingView(xmlDoc, container) {
+    fetch(path)
+        .then(r => r.text())
+        .then(xsltText => {
 
-    container.innerHTML = "";
+            const xsltDoc =
+                new DOMParser().parseFromString(xsltText, "text/xml");
 
-    const paragraphs = xmlDoc.getElementsByTagName("paragraph");
+            const processor = new XSLTProcessor();
+            processor.importStylesheet(xsltDoc);
 
-    Array.from(paragraphs).forEach(p => {
+            const result =
+                processor.transformToFragment(xmlDoc, document);
 
-        const pEl = document.createElement("p");
-
-        p.childNodes.forEach(node => {
-
-            if (node.nodeType === Node.TEXT_NODE) {
-                pEl.appendChild(document.createTextNode(node.textContent));
-            } else {
-
-                const span = document.createElement("span");
-                span.textContent = node.textContent;
-                span.className = node.nodeName; // metaphor / simile
-
-                pEl.appendChild(span);
-            }
+            container.innerHTML = "";
+            container.appendChild(result);
         });
-
-        container.appendChild(pEl);
-    });
 }
