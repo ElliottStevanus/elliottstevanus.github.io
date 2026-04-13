@@ -32,7 +32,9 @@ document.addEventListener("DOMContentLoaded", function () {
                 { regex: /\b(?:was|were|is|are|became|becomes)\s+(?:a|an|the)\s+[a-zA-Z'-]+/gi, tag: "metaphor" },
                 { regex: /\bas\s+if\s+[^.!?]+/gi, tag: "simile" }
             ];
-
+console.log("SIMILES IN XML:", xml.getElementsByTagName("simile").length);
+console.log("METAPHORS IN XML:", xml.getElementsByTagName("metaphor").length);
+            
             // Convert NodeList safely
             Array.from(paragraphs).forEach(p => {
 
