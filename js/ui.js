@@ -118,7 +118,7 @@ function attachMetaphorListEvents() {
     document.querySelectorAll(".metaphor-item").forEach(item => {
 
         item.onclick = () => {
-            const context = item.querySelector("[data-context]").getAttribute("data-context");
+const context = item.getAttribute("data-context");
             alert(item.textContent + "\n\n" + context);
         };
     });
