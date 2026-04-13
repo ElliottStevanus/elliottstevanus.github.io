@@ -1,18 +1,14 @@
-
-/* =========================
-   BASE LAYOUT
-========================= */
-
 body {
     font-family: Arial, sans-serif;
-    margin: 0;
-    padding: 0;
+    margin: 20px;
 }
 
-/* =========================
-   ANALYSIS PANEL
-========================= */
+/* NAV */
+nav a {
+    margin-right: 10px;
+}
 
+/* PANEL */
 #analysis-panel {
     background: #f7f7f7;
     border: 1px solid #ddd;
@@ -20,10 +16,7 @@ body {
     margin-bottom: 20px;
 }
 
-/* =========================
-   SEARCH BAR
-========================= */
-
+/* SEARCH */
 #figure-search {
     width: 100%;
     padding: 8px;
@@ -39,17 +32,14 @@ body {
 
 #search-results li {
     cursor: pointer;
-    padding: 4px;
+    padding: 5px;
 }
 
 #search-results li:hover {
     text-decoration: underline;
 }
 
-/* =========================
-   FIGURATIVE LANGUAGE
-========================= */
-
+/* FIGURATIVE LANGUAGE */
 .simile {
     border-bottom: 2px solid #2a6df4;
     cursor: pointer;
@@ -57,7 +47,7 @@ body {
 
 .metaphor {
     background: #ffd6d6;
-    padding: 2px 3px;
+    padding: 2px 4px;
     border-radius: 3px;
     cursor: pointer;
 }
