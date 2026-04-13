@@ -3,44 +3,36 @@ document.addEventListener("DOMContentLoaded", function () {
     let figureID = 0;
     let figures = [];
 
-    const parser = new DOMParser();
     fetch("Text/dorian_gray.xml")
         .then(res => {
-            if(!res.ok) throw new Error("XML load failed");
+            if (!res.ok) throw new Error("XML load failed");
             return res.text();
         })
         .then(str => {
 
+            const parser = new DOMParser();
             const xml = parser.parseFromString(str, "text/xml");
 
             const paragraphs = xml.getElementsByTagName("paragraph");
 
-            function normalizeText(text){
-                return text.replace(/\s+/g," ");
-            }
-
-            function escapeXML(str){
-                return str
-                    .replace(/&/g, "&amp;")
-                    .replace(/</g, "&lt;")
-                    .replace(/>/g, "&gt;");
+            function normalizeText(text) {
+                return text.replace(/\s+/g, " ");
             }
 
             const patterns = [
-                { regex:/\bas\s+[a-zA-Z'-]+\s+as\s+[a-zA-Z'-]+\b/gi, tag:"simile" },
-                { regex:/\blike\s+(?:a|an|the)\s+[a-zA-Z'-]+\b/gi, tag:"simile" },
-                { regex:/\blike\s+(?:a|an|the)\s+[a-zA-Z'-]+(?:\s+[a-zA-Z'-]+){0,5}/gi, tag:"simile" },
-                { regex:/\b(?:was|were|is|are|became|becomes)\s+(?:a|an|the)\s+[a-zA-Z'-]+\b/gi, tag:"metaphor" },
-                { regex:/\bas\s+if\s+[^.!?]+/gi, tag:"simile" },
-                { regex:/\b[a-zA-Z'-]+\s+of\s+[a-zA-Z'-]+\b/gi, tag:"metaphor" }
+                { regex: /\bas\s+[a-zA-Z'-]+\s+as\s+[a-zA-Z'-]+\b/gi, tag: "simile" },
+                { regex: /\blike\s+(?:a|an|the)\s+[a-zA-Z'-]+\b/gi, tag: "simile" },
+                { regex: /\blike\s+(?:a|an|the)\s+[a-zA-Z'-]+(?:\s+[a-zA-Z'-]+){0,5}/gi, tag: "simile" },
+                { regex: /\b(?:was|were|is|are|became|becomes)\s+(?:a|an|the)\s+[a-zA-Z'-]+\b/gi, tag: "metaphor" },
+                { regex: /\bas\s+if\s+[^.!?]+/gi, tag: "simile" },
+                { regex: /\b[a-zA-Z'-]+\s+of\s+[a-zA-Z'-]+\b/gi, tag: "metaphor" }
             ];
 
-const newDoc = document.implementation.createDocument(null, "root", null);            const root = newDoc.documentElement;
+            let output = "";
 
-            for(let i = 0; i < paragraphs.length; i++){
+            for (let i = 0; i < paragraphs.length; i++) {
 
-                let text = paragraphs[i].textContent;
-                text = normalizeText(text);
+                let text = normalizeText(paragraphs[i].textContent);
 
                 patterns.forEach(p => {
                     text = text.replace(p.regex, match => {
@@ -58,76 +50,47 @@ const newDoc = document.implementation.createDocument(null, "root", null);      
                     });
                 });
 
-                const safeText = escapeXML(text);
-
-                const temp = parser.parseFromString(
-                    `<paragraph>${safeText}</paragraph>`,
-                    "text/xml"
-                );
-
-                const imported = newDoc.importNode(temp.documentElement, true);
-                root.appendChild(imported);
+                output += `<p>${text}</p>`;
             }
 
-            console.log("Figures detected:", figures.length);
+            // DIRECT RENDER (NO XML REBUILD, NO XSLT REQUIRED)
+            document.getElementById("novel-text").innerHTML = output;
 
-            // NOW LOAD XSLT PROPERLY
-            return fetch("xslt/transform.xsl")
-                .then(res => {
-                    if(!res.ok) throw new Error("XSLT load failed");
-                    return res.text();
-                })
-                .then(xslText => {
-
-                    const xslDoc = parser.parseFromString(xslText, "text/xml");
-
-                    const xsltProcessor = new XSLTProcessor();
-                    xsltProcessor.importStylesheet(xslDoc);
-
-                    const result = xsltProcessor.transformToFragment(newDoc, document);
-
-                    const container = document.getElementById("novel-text");
-                    container.innerHTML = "";
-                    container.appendChild(result);
-
-                    // ONLY RUN SEARCH AFTER EVERYTHING IS READY
-                    setupSearch(figures);
-                });
-
+            setupSearch(figures);
         })
         .catch(err => {
             console.error("PIPELINE ERROR:", err);
             document.getElementById("novel-text").innerHTML =
-                "<p>Failed to load text.</p>";
+                "<p>Failed to load text. Check console.</p>";
         });
 
-    function setupSearch(figures){
+
+    function setupSearch(figures) {
 
         const searchBox = document.getElementById("figure-search");
         const resultsList = document.getElementById("search-results");
 
-        searchBox.addEventListener("input", function(){
+        searchBox.addEventListener("input", function () {
 
             const query = this.value.toLowerCase();
             resultsList.innerHTML = "";
 
-            if(query.length === 0) return;
+            if (query.length === 0) return;
 
             figures.forEach(fig => {
 
-                if(fig.text.toLowerCase().includes(query)){
+                if (fig.text.toLowerCase().includes(query)) {
 
                     const li = document.createElement("li");
                     li.textContent = fig.text;
 
-                    li.addEventListener("click", function(){
-
+                    li.addEventListener("click", function () {
                         const target = document.getElementById(fig.id);
 
-                        if(target){
+                        if (target) {
                             target.scrollIntoView({
-                                behavior:"smooth",
-                                block:"center"
+                                behavior: "smooth",
+                                block: "center"
                             });
                         }
                     });
