@@ -6,43 +6,29 @@ export function annotateXML(paragraphs) {
 
         const text = p.textContent;
 
-        // STEP 1: collect all tags as positions (NO STRING REPLACEMENT YET)
         let tags = [];
 
-        // -------------------------
         // SIMILES
-        // -------------------------
         const simileRegex =
             /\bas\s+[^.!?]+?\s+as\s+[^.!?]+|like\s+(a|an|the)\s+[^.!?]+|as\s+if\s+[^.!?]+/gi;
 
         let m;
         while ((m = simileRegex.exec(text)) !== null) {
-            tags.push({
-                start: m.index,
-                end: m.index + m[0].length,
-                type: "simile"
-            });
+            tags.push({ start: m.index, end: m.index + m[0].length, type: "simile" });
         }
 
-        // -------------------------
-        // METAPHOR TRIGGERS → CLAUSE EXPANSION
-        // -------------------------
-const triggerRegex = /\b(is|are|was|were|became|becomes)\s+(a|an|the)\b/gi;
+        // METAPHORS
+        const triggerRegex = /\b(is|are|was|were|became|becomes)\b/gi;
+
         while ((m = triggerRegex.exec(text)) !== null) {
-
             const clause = expandClause(text, m.index);
-
-            tags.push({
-                start: clause.start,
-                end: clause.end,
-                type: "metaphor"
-            });
+            tags.push({ start: clause.start, end: clause.end, type: "metaphor" });
         }
 
-        // STEP 2: sort tags left → right
+        // SORT
         tags.sort((a, b) => a.start - b.start);
 
-        // STEP 3: remove overlaps (important!)
+        // REMOVE OVERLAPS
         let filtered = [];
         let lastEnd = 0;
 
@@ -53,7 +39,7 @@ const triggerRegex = /\b(is|are|was|were|became|becomes)\s+(a|an|the)\b/gi;
             }
         }
 
-        // STEP 4: rebuild paragraph safely
+        // 🟢 SINGLE PASS BUILD (NO replace!)
         let result = "";
         let cursor = 0;
 
@@ -61,9 +47,9 @@ const triggerRegex = /\b(is|are|was|were|became|becomes)\s+(a|an|the)\b/gi;
 
             result += escapeXML(text.slice(cursor, t.start));
 
-            const tagText = text.slice(t.start, t.end);
-
-            result += `<${t.type}>${escapeXML(tagText)}</${t.type}>`;
+            result += `<${t.type}>` +
+                       escapeXML(text.slice(t.start, t.end)) +
+                       `</${t.type}>`;
 
             cursor = t.end;
         }
@@ -75,42 +61,4 @@ const triggerRegex = /\b(is|are|was|were|became|becomes)\s+(a|an|the)\b/gi;
 
     xml += "</book>";
     return xml;
-}
-
-// -------------------------
-// CLAUSE EXPANSION (SAFE BOUNDARIES)
-// -------------------------
-function expandClause(text, index) {
-
-    const before = text.slice(0, index);
-    const after = text.slice(index);
-
-    // start = last sentence boundary
-    let start = Math.max(
-        before.lastIndexOf("."),
-        before.lastIndexOf("!"),
-        before.lastIndexOf("?")
-    );
-
-    start = start === -1 ? 0 : start + 1;
-
-    // end = next sentence boundary
-    let endRel = after.search(/[.!?]/);
-    let end = endRel === -1 ? text.length : index + endRel;
-
-    // safety trimming (prevents giant clauses)
-    start = Math.max(0, start);
-    end = Math.min(text.length, end);
-
-    return { start, end };
-}
-
-// -------------------------
-// XML ESCAPING (IMPORTANT SAFETY FIX)
-// -------------------------
-function escapeXML(str) {
-    return str
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;");
 }
