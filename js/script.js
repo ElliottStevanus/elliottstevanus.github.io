@@ -4,12 +4,7 @@ document.addEventListener("DOMContentLoaded", function () {
     let figures = [];
 
     fetch("Text/dorian_gray.xml")
-        .then(response => {
-            if (!response.ok) {
-                throw new Error(`Failed to fetch dorian_gray.xml: ${response.status}`);
-            }
-            return response.text();
-        })
+        .then(res => res.text())
         .then(str => {
 
             const parser = new DOMParser();
@@ -17,27 +12,22 @@ document.addEventListener("DOMContentLoaded", function () {
 
             const paragraphs = xml.getElementsByTagName("paragraph");
 
-            let output = "";
-
             function normalizeText(text){
                 return text.replace(/\s+/g," ");
             }
 
             const patterns = [
-
                 { regex:/\bas\s+[a-zA-Z'-]+\s+as\s+[a-zA-Z'-]+\b/gi, tag:"simile" },
-
                 { regex:/\blike\s+(?:a|an|the)\s+[a-zA-Z'-]+\b/gi, tag:"simile" },
-
                 { regex:/\blike\s+(?:a|an|the)\s+[a-zA-Z'-]+(?:\s+[a-zA-Z'-]+){0,5}/gi, tag:"simile" },
-
                 { regex:/\b(?:was|were|is|are|became|becomes)\s+(?:a|an|the)\s+[a-zA-Z'-]+\b/gi, tag:"metaphor" },
-
                 { regex:/\bas\s+if\s+[^.!?]+/gi, tag:"simile" },
-
                 { regex:/\b[a-zA-Z'-]+\s+of\s+[a-zA-Z'-]+\b/gi, tag:"metaphor" }
-
             ];
+
+            // NEW XML DOCUMENT
+            const newDoc = document.implementation.createDocument("", "root", null);
+            const root = newDoc.documentElement;
 
             for(let i=0;i<paragraphs.length;i++){
 
@@ -45,11 +35,9 @@ document.addEventListener("DOMContentLoaded", function () {
                 text = normalizeText(text);
 
                 patterns.forEach(p => {
-
                     text = text.replace(p.regex, match => {
 
                         figureID++;
-
                         const id = "figure-" + figureID;
 
                         figures.push({
@@ -61,43 +49,51 @@ document.addEventListener("DOMContentLoaded", function () {
                         return `<${p.tag} id="${id}">${match}</${p.tag}>`;
 
                     });
-
                 });
 
-output += `<p>${text}</p>`;
-            }
+                // convert string → XML node
+                const temp = parser.parseFromString(
+                    `<paragraph>${text}</paragraph>`,
+                    "text/xml"
+                );
 
-            document.getElementById("novel-text").innerHTML = output;
+                const imported = newDoc.importNode(temp.documentElement, true);
+                root.appendChild(imported);
+            }
 
             console.log("Figures detected:", figures.length);
 
+            // APPLY XSLT
+            fetch("xslt/transform.xsl")
+                .then(res => res.text())
+                .then(xslText => {
+
+                    const xslDoc = parser.parseFromString(xslText, "text/xml");
+
+                    const xsltProcessor = new XSLTProcessor();
+                    xsltProcessor.importStylesheet(xslDoc);
+
+                    const result = xsltProcessor.transformToFragment(newDoc, document);
+
+                    const container = document.getElementById("novel-text");
+                    container.innerHTML = "";
+                    container.appendChild(result);
+
+                });
+
             setupSearch(figures);
-
-        })
-        .catch(error => {
-
-            console.error("Error loading XML:",error);
-
-            document.getElementById("novel-text").innerHTML =
-            "<p>Failed to load the novel text.</p>";
 
         });
 
-
+    // SEARCH SYSTEM
     function setupSearch(figures){
 
         const searchBox = document.getElementById("figure-search");
         const resultsList = document.getElementById("search-results");
 
-        if(!searchBox || !resultsList){
-            console.log("Search elements not found.");
-            return;
-        }
-
         searchBox.addEventListener("input", function(){
 
             const query = this.value.toLowerCase();
-
             resultsList.innerHTML = "";
 
             if(query.length === 0) return;
@@ -107,7 +103,6 @@ output += `<p>${text}</p>`;
                 if(fig.text.toLowerCase().includes(query)){
 
                     const li = document.createElement("li");
-
                     li.textContent = fig.text;
 
                     li.addEventListener("click", function(){
@@ -124,7 +119,6 @@ output += `<p>${text}</p>`;
                     });
 
                     resultsList.appendChild(li);
-
                 }
 
             });
