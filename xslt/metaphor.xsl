@@ -1,69 +1,39 @@
-<?xml version="1.0" encoding="UTF-8"?>
 <xsl:stylesheet version="1.0"
     xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
 
-    <!-- OUTPUT AS HTML -->
     <xsl:output method="html" encoding="UTF-8" indent="yes"/>
 
-    <!-- ROOT TEMPLATE -->
     <xsl:template match="/">
 
-        <html>
-            <head>
-                <title>Metaphor Only View</title>
-                <style>
-                    body {
-                        font-family: Arial, sans-serif;
-                        padding: 20px;
-                    }
+        <div class="metaphor-view">
 
-                    .metaphor-item {
-                        display: block;
-                        margin: 10px 0;
-                        padding: 8px;
-                        border-left: 3px solid #444;
-                        cursor: pointer;
-                    }
+            <h2>Metaphor-Only View</h2>
 
-                    .metaphor-item:hover {
-                        background: #f2f2f2;
-                    }
-                </style>
-            </head>
+            <xsl:for-each select="//paragraph">
 
-            <body>
+                <xsl:variable name="context" select="normalize-space(.)"/>
 
-                <h2>Metaphor-Only View</h2>
+                <xsl:for-each select=".//metaphor">
 
-                <!-- LOOP THROUGH ALL PARAGRAPHS -->
-                <xsl:for-each select="//paragraph">
+                    <div class="metaphor-item">
 
-                    <!-- STORE FULL CONTEXT -->
-                    <xsl:variable name="context" select="normalize-space(.)"/>
+                        <xsl:attribute name="data-context">
+                            <xsl:value-of select="$context"/>
+                        </xsl:attribute>
 
-                    <!-- FIND METAPHORS INSIDE -->
-                    <xsl:for-each select=".//metaphor">
+                        <xsl:attribute name="data-paragraph">
+                            <xsl:value-of select="position()"/>
+                        </xsl:attribute>
 
-                        <div class="metaphor-item">
-                            
-                            <!-- METAPHOR TEXT -->
-                            <xsl:value-of select="normalize-space(.)"/>
+                        <xsl:value-of select="normalize-space(.)"/>
 
-                            <!-- STORE CONTEXT FOR JS POPUP -->
-                            <span style="display:none;">
-                                <xsl:attribute name="data-context">
-                                    <xsl:value-of select="$context"/>
-                                </xsl:attribute>
-                            </span>
-
-                        </div>
-
-                    </xsl:for-each>
+                    </div>
 
                 </xsl:for-each>
 
-            </body>
-        </html>
+            </xsl:for-each>
+
+        </div>
 
     </xsl:template>
 
