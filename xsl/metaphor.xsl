@@ -4,6 +4,14 @@
     xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
     version="1.0">
 
+<xsl:output method="html"/>
+
+<xsl:template match="/">
+
+<html>
+<body>
+
+<h2>Metaphor View</h2>
 
 <xsl:for-each select="//metaphor">
 
@@ -16,10 +24,16 @@
         <br/>
 
         <em>
-            <xsl:value-of select="ancestor::paragraph/text()"/>
+            <xsl:value-of select="ancestor::paragraph"/>
         </em>
 
     </div>
 
 </xsl:for-each>
+
+</body>
+</html>
+
+</xsl:template>
+
 </xsl:stylesheet>
