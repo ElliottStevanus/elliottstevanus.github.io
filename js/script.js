@@ -11,7 +11,6 @@ document.addEventListener("DOMContentLoaded", () => {
         .then(xmlText => {
 
             const xml = new DOMParser().parseFromString(xmlText, "text/xml");
-
             const paragraphs = xml.getElementsByTagName("paragraph");
 
             const patterns = [
@@ -19,34 +18,30 @@ document.addEventListener("DOMContentLoaded", () => {
                     regex: /\bas\s+[a-zA-Z'-]+(?:\s+[a-zA-Z'-]+){0,2}\s+as\s+[a-zA-Z'-]+(?:\s+[a-zA-Z'-]+){0,2}\b/gi,
                     tag: "simile"
                 },
-
                 {
                     regex: /\blike\s+(?:a|an|the)\s+[a-zA-Z'-]+(?:\s+[a-zA-Z'-]+){0,3}\b/gi,
                     tag: "simile"
                 },
-
                 {
                     regex: /\blike\s+(?:a|an|the)\s+[a-zA-Z'-]+(?:\s+[a-zA-Z'-]+){1,4}\b/gi,
                     tag: "simile"
                 },
-
                 {
                     regex: /\b(?:is|are|was|were|becomes|became)\s+(?:a|an|the)\s+[a-zA-Z'-]+(?:\s+[a-zA-Z'-]+){0,2}\b/gi,
                     tag: "metaphor"
                 },
-
                 {
                     regex: /\bas\s+if\s+[^.!?\n]+/gi,
                     tag: "simile"
                 },
-
                 {
                     regex: /\b(?:heart|sea|river|storm|wave|ocean|world|mountain|forest|fire)\s+of\s+[a-zA-Z'-]+(?:\s+[a-zA-Z'-]+){0,2}\b/gi,
                     tag: "metaphor"
                 }
             ];
 
-            let html = "";
+            // CLEAR container
+            container.innerHTML = "";
 
             Array.from(paragraphs).forEach(p => {
 
@@ -54,7 +49,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
                 let matches = [];
 
-                // 1. Collect all matches safely (NO shared regex state)
                 patterns.forEach(rule => {
 
                     const regex = new RegExp(rule.regex);
@@ -70,10 +64,8 @@ document.addEventListener("DOMContentLoaded", () => {
                     }
                 });
 
-                // 2. Sort matches
                 matches.sort((a, b) => a.start - b.start);
 
-                // 3. Remove overlaps
                 let filtered = [];
                 let lastEnd = 0;
 
@@ -84,29 +76,41 @@ document.addEventListener("DOMContentLoaded", () => {
                     }
                 }
 
-                // 4. Rebuild string once
-                let result = "";
+                // 🟢 BUILD REAL DOM (NOT HTML STRING)
+                const pEl = document.createElement("p");
+
                 let cursor = 0;
 
-                for (let m of filtered) {
-                    result += text.slice(cursor, m.start);
-                    result += `<span class="${m.tag}">${m.text}</span>`;
+                filtered.forEach(m => {
+
+                    // text before match
+                    if (cursor < m.start) {
+                        pEl.appendChild(
+                            document.createTextNode(text.slice(cursor, m.start))
+                        );
+                    }
+
+                    // semantic tag (THIS is what XSLT uses)
+                    const span = document.createElement(m.tag);
+                    span.textContent = m.text;
+
+                    pEl.appendChild(span);
+
                     cursor = m.end;
+                });
+
+                // remaining text
+                if (cursor < text.length) {
+                    pEl.appendChild(
+                        document.createTextNode(text.slice(cursor))
+                    );
                 }
 
-                result += text.slice(cursor);
-
-                html += `<p>${result}</p>`;
+                container.appendChild(pEl);
             });
 
-            container.innerHTML = html;
-
-            // SAFE INDEXING (with fallback so search never breaks)
-            indexedElements = Array.from(container.querySelectorAll("span.simile, span.metaphor"));
-
-            if (indexedElements.length === 0) {
-                indexedElements = Array.from(container.querySelectorAll("span"));
-            }
+            // 🟣 INDEXING UPDATED FOR XSLT STRUCTURE
+            indexedElements = Array.from(container.querySelectorAll("metaphor, simile"));
 
             console.log("indexed elements:", indexedElements.length);
 
