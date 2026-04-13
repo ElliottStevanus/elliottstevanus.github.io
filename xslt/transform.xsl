@@ -48,8 +48,10 @@
     </xsl:template>
 
     <!-- DEFAULT TEXT HANDLING -->
-    <xsl:template match="text()">
-        <xsl:value-of select="."/>
-    </xsl:template>
+   <xsl:template match="paragraph">
+    <p>
+        <xsl:value-of select="normalize-space(.)"/>
+    </p>
+</xsl:template>
 
 </xsl:stylesheet>
