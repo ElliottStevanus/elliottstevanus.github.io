@@ -16,8 +16,8 @@ export function setupUI(container, annotatedDoc) {
         attachSpanEvents(container);
     };
 
-    document.getElementById("view-metaphor").onclick = () => {
-        runXSLT(container, annotatedDoc);
+    document.getElementById("view-metaphor").onclick = async () => {
+        await runXSLT(container, annotatedDoc);
         attachMetaphorListEvents();
     };
 
@@ -26,7 +26,7 @@ export function setupUI(container, annotatedDoc) {
     };
 
     // -------------------------
-    // SEARCH (analysis view)
+    // SEARCH
     // -------------------------
 
     searchBox.addEventListener("input", () => {
@@ -59,12 +59,13 @@ export function setupUI(container, annotatedDoc) {
 // XSLT VIEW
 // -------------------------
 
-function runXSLT(container, xmlDoc) {
+async function runXSLT(container, xmlDoc) {
 
-const xsltText = document
-    .getElementById("metaphor-xsl")
-    .textContent.trim();
-    const xsltDoc = new DOMParser().parseFromString(xsltText, "text/xml");
+    const xsltText = await fetch("xsl/metaphor.xsl")
+        .then(r => r.text());
+
+    const xsltDoc = new DOMParser()
+        .parseFromString(xsltText, "text/xml");
 
     const processor = new XSLTProcessor();
     processor.importStylesheet(xsltDoc);
@@ -120,7 +121,7 @@ function attachMetaphorListEvents() {
     document.querySelectorAll(".metaphor-item").forEach(item => {
 
         item.onclick = () => {
-const context = item.getAttribute("data-context");
+            const context = item.getAttribute("data-context");
             alert(item.textContent + "\n\n" + context);
         };
     });
