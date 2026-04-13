@@ -1,8 +1,4 @@
-// script.js
-
 import { annotateXML } from "./annotator.js";
-import { renderReadingView } from "./renderer.js";
-import { setupUI } from "./ui.js";
 
 document.addEventListener("DOMContentLoaded", async () => {
 
@@ -13,9 +9,40 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     const paragraphs = xml.getElementsByTagName("paragraph");
 
+    // STEP 1: annotate
     const annotatedXML = annotateXML(paragraphs);
     const annotatedDoc = new DOMParser().parseFromString(annotatedXML, "text/xml");
 
-    renderReadingView(annotatedDoc, container);
-    setupUI(container, annotatedDoc);
+    // default view
+    runXSLT("xsl/reading.xsl", annotatedDoc, container);
+
+    // UI buttons
+    document.getElementById("view-reading").onclick = () =>
+        runXSLT("xsl/reading.xsl", annotatedDoc, container);
+
+    document.getElementById("view-metaphor").onclick = () =>
+        runXSLT("xsl/metaphor.xsl", annotatedDoc, container);
+
+    document.getElementById("view-analysis").onclick = () =>
+        runXSLT("xsl/analysis.xsl", annotatedDoc, container);
 });
+
+// -------------------------
+
+function runXSLT(path, xmlDoc, container) {
+
+    fetch(path)
+        .then(r => r.text())
+        .then(xsltText => {
+
+            const xsltDoc = new DOMParser().parseFromString(xsltText, "text/xml");
+
+            const processor = new XSLTProcessor();
+            processor.importStylesheet(xsltDoc);
+
+            const result = processor.transformToFragment(xmlDoc, document);
+
+            container.innerHTML = "";
+            container.appendChild(result);
+        });
+}
