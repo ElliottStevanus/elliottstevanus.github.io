@@ -6,6 +6,7 @@ document.addEventListener("DOMContentLoaded", function () {
         .then(res => res.text())
         .then(xmlText => {
 
+            
             const xml = parser.parseFromString(xmlText, "text/xml");
 
             return fetch("xslt/transform.xsl")
