@@ -35,8 +35,6 @@
 
 <!-- XSLT -->
 <script id="metaphor-xsl" type="text/xsl">
-<?xml version="1.0" encoding="UTF-8"?>
-
 <xsl:stylesheet version="1.0"
     xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
 
@@ -48,28 +46,22 @@
 
             <h2>Metaphor-Only View</h2>
 
-            <!-- Loop through paragraphs -->
             <xsl:for-each select="//paragraph">
 
-                <!-- Store full paragraph text -->
                 <xsl:variable name="context" select="normalize-space(.)"/>
 
-                <!-- Loop through metaphors inside paragraph -->
                 <xsl:for-each select=".//metaphor">
 
                     <div class="metaphor-item">
 
-                        <!-- Store context safely as attribute -->
                         <xsl:attribute name="data-context">
                             <xsl:value-of select="$context"/>
                         </xsl:attribute>
 
-                        <!-- Store paragraph index -->
                         <xsl:attribute name="data-paragraph">
                             <xsl:value-of select="position()"/>
                         </xsl:attribute>
 
-                        <!-- Display metaphor text -->
                         <xsl:value-of select="normalize-space(.)"/>
 
                     </div>
@@ -82,7 +74,8 @@
 
     </xsl:template>
 
-</xsl:stylesheet></script>
+</xsl:stylesheet>
+</script>
 
 <!-- MAIN SCRIPT -->
 <script type="module" src="js/script.js"></script>
