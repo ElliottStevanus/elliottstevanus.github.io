@@ -1,71 +1,89 @@
 document.addEventListener("DOMContentLoaded", function () {
 
-    let figureID = 0;
-    let figures = [];
+    const parser = new DOMParser();
 
-    const patterns = [
-        { regex: /\bas\s+[a-zA-Z'-]+\s+as\s+[a-zA-Z'-]+\b/gi, tag: "simile" },
-        { regex: /\blike\s+(?:a|an|the)\s+[a-zA-Z'-]+\b/gi, tag: "simile" },
-        { regex: /\blike\s+(?:a|an|the)\s+[a-zA-Z'-]+(?:\s+[a-zA-Z'-]+){0,5}/gi, tag: "simile" },
-        { regex: /\b(?:was|were|is|are|became|becomes)\s+(?:a|an|the)\s+[a-zA-Z'-]+\b/gi, tag: "metaphor" },
-        { regex: /\bas\s+if\s+[^.!?]+/gi, tag: "simile" },
-        { regex: /\b[a-zA-Z'-]+\s+of\s+[a-zA-Z'-]+\b/gi, tag: "metaphor" }
-    ];
+    window.addEventListener("load", function () {
 
-    function normalizeText(text) {
-        return text.replace(/\s+/g, " ");
-    }
+        console.log("Starting pipeline...");
 
-    //  wait until XSLT has rendered content
-    function processText() {
+        fetch("Text/dorian_gray.xml")
+            .then(res => {
+                if (!res.ok) throw new Error("XML load failed");
+                return res.text();
+            })
+            .then(xmlText => {
 
-        const paragraphs = document.querySelectorAll("#novel-text p");
+                const xml = parser.parseFromString(xmlText, "text/xml");
+                const paragraphs = xml.getElementsByTagName("paragraph");
 
-        if (paragraphs.length === 0) {
-            // Try again if XSLT hasn't finished yet
-            setTimeout(processText, 100);
-            return;
-        }
+                let newDoc = document.implementation.createDocument("", "root", null);
+                const root = newDoc.documentElement;
 
-        paragraphs.forEach(p => {
+                let figureID = 0;
 
-            let text = normalizeText(p.innerHTML);
+                const patterns = [
+                    { regex: /\bas\s+[a-zA-Z'-]+\s+as\s+[a-zA-Z'-]+/gi, tag: "simile" },
+                    { regex: /\blike\s+(?:a|an|the)\s+[a-zA-Z'-]+/gi, tag: "simile" },
+                    { regex: /\b(?:was|were|is|are|became|becomes)\s+(?:a|an|the)\s+[a-zA-Z'-]+/gi, tag: "metaphor" },
+                    { regex: /\bas\s+if\s+[^.!?]+/gi, tag: "simile" }
+                ];
 
-            patterns.forEach(pattern => {
-                text = text.replace(pattern.regex, match => {
+                for (let p of paragraphs) {
 
-                    figureID++;
-                    const id = "figure-" + figureID;
+                    let text = p.textContent.replace(/\s+/g, " ");
 
-                    figures.push({
-                        type: pattern.tag,
-                        text: match,
-                        id: id
+                    patterns.forEach(rule => {
+                        text = text.replace(rule.regex, match => {
+
+                            figureID++;
+                            return `<${rule.tag} id="fig-${figureID}">${match}</${rule.tag}>`;
+
+                        });
                     });
 
-                    return `<${pattern.tag} id="${id}">${match}</${pattern.tag}>`;
-                });
+                    const temp = parser.parseFromString(
+                        `<paragraph>${escapeXML(text)}</paragraph>`,
+                        "text/xml"
+                    );
+
+                    root.appendChild(newDoc.importNode(temp.documentElement, true));
+                }
+
+                console.log("Regex annotation complete");
+
+                return fetch("xslt/transform.xsl")
+                    .then(res => res.text())
+                    .then(xslText => {
+
+                        const xslDoc = parser.parseFromString(xslText, "text/xml");
+
+                        const xslt = new XSLTProcessor();
+                        xslt.importStylesheet(xslDoc);
+
+                        const result = xslt.transformToFragment(newDoc, document);
+
+                        document.getElementById("novel-text").innerHTML = "";
+                        document.getElementById("novel-text").appendChild(result);
+
+                        setupSearch();
+                    });
+
+            })
+            .catch(err => {
+                console.error("Pipeline error:", err);
             });
+    });
 
-            p.innerHTML = text;
-        });
-
-        console.log("Figures detected:", figures.length);
-
-        setupSearch(figures);
-    }
-
-    processText();
-
-
-    // search system
-    function setupSearch(figures) {
+    // =========================
+    // SEARCH (runs AFTER XSLT)
+    // =========================
+    function setupSearch() {
 
         const searchBox = document.getElementById("figure-search");
         const resultsList = document.getElementById("search-results");
 
         if (!searchBox || !resultsList) {
-            console.log("Search UI not found");
+            console.warn("Search UI missing");
             return;
         }
 
@@ -74,34 +92,44 @@ document.addEventListener("DOMContentLoaded", function () {
             const query = this.value.toLowerCase();
             resultsList.innerHTML = "";
 
-            if (query.length === 0) return;
+            if (!query) return;
 
-            figures.forEach(fig => {
+            const items = document.querySelectorAll("simile, metaphor, .simile, .metaphor");
 
-                if (fig.text.toLowerCase().includes(query)) {
+            items.forEach(el => {
+
+                const text = el.textContent;
+
+                if (text.toLowerCase().includes(query)) {
 
                     const li = document.createElement("li");
-                    li.textContent = fig.text;
+                    li.textContent = text;
 
-                    li.addEventListener("click", function () {
+                    li.addEventListener("click", () => {
 
-                        const target = document.getElementById(fig.id);
+                        el.scrollIntoView({
+                            behavior: "smooth",
+                            block: "center"
+                        });
 
-                        if (target) {
-                            target.scrollIntoView({
-                                behavior: "smooth",
-                                block: "center"
-                            });
-                        }
-
+                        el.style.background = "yellow";
+                        setTimeout(() => el.style.background = "", 800);
                     });
 
                     resultsList.appendChild(li);
                 }
-
             });
-
         });
+    }
+
+    // =========================
+    // XML ESCAPE HELPER
+    // =========================
+    function escapeXML(str) {
+        return str
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;");
     }
 
 });
