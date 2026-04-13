@@ -1,6 +1,6 @@
 // renderer.js
 
-export function renderXML(xmlDoc, container) {
+export function renderReadingView(xmlDoc, container) {
 
     container.innerHTML = "";
 
@@ -10,19 +10,15 @@ export function renderXML(xmlDoc, container) {
 
         const pEl = document.createElement("p");
 
-        // walk child nodes (text + metaphors)
         p.childNodes.forEach(node => {
 
             if (node.nodeType === Node.TEXT_NODE) {
                 pEl.appendChild(document.createTextNode(node.textContent));
-            }
+            } else {
 
-            else {
-                // metaphor or simile tag
-                const span = document.createElement(node.nodeName);
+                const span = document.createElement("span");
                 span.textContent = node.textContent;
-
-                span.classList.add("highlight");
+                span.className = node.nodeName; // metaphor / simile
 
                 pEl.appendChild(span);
             }
