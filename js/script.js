@@ -1,6 +1,8 @@
 import { annotateXML } from "./annotator.js";
 import { setupUI } from "./ui.js";
 
+console.log(annotatedXML);
+
 document.addEventListener("DOMContentLoaded", async () => {
 
     const container = document.getElementById("novel-text");
