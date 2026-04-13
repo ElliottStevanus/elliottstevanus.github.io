@@ -1,127 +1,62 @@
-// annotator.js
-
 export function annotateXML(paragraphs) {
 
-    let annotatedXML = "<book>";
+    let xml = "<book>";
 
     Array.from(paragraphs).forEach(p => {
 
         const text = p.textContent;
 
-        let matches = [];
+        xml += "<paragraph>";
 
-        // ----------------------------
-        // 1. SIMILES (still regex-based)
-        // ----------------------------
+        // SIMILES (simple + safe)
+        const similes = text.match(/\bas\s+[^.!?]+?\s+as\s+[^.!?]+|like\s+(a|an|the)\s+[^.!?]+|as\s+if\s+[^.!?]+/gi);
 
-        const similePatterns = [
-            /\bas\s+[^.!?]+?\s+as\s+[^.!?]+/gi,
-            /\blike\s+(?:a|an|the)\s+[^.!?]+/gi,
-            /\bas\s+if\s+[^.!?]+/gi
-        ];
+        let processed = text;
 
-        similePatterns.forEach(regex => {
-
-            let m;
-            while ((m = regex.exec(text)) !== null) {
-                matches.push({
-                    start: m.index,
-                    end: m.index + m[0].length,
-                    text: m[0],
-                    tag: "simile"
-                });
-            }
-        });
-
-        // ----------------------------
-        // 2. METAPHORS (CLAUSE DETECTION)
-        // ----------------------------
-
-        const triggerRegex = /\b(is|are|was|were|became|becomes|like)\b/gi;
-
-        let m;
-        while ((m = triggerRegex.exec(text)) !== null) {
-
-            const clause = expandToClause(text, m.index);
-
-            matches.push({
-                start: clause.start,
-                end: clause.end,
-                text: text.slice(clause.start, clause.end),
-                tag: "metaphor"
+        if (similes) {
+            similes.forEach((s, i) => {
+                processed = processed.replace(s, `<simile>${s}</simile>`);
             });
         }
 
-        // ----------------------------
-        // 3. SORT + REMOVE OVERLAPS
-        // ----------------------------
+        // METAPHOR CLAUSE DETECTION
+        const metaphorTriggers = /\b(is|are|was|were|became|becomes)\b/gi;
 
-        matches.sort((a, b) => a.start - b.start);
+        let m;
+        while ((m = metaphorTriggers.exec(text)) !== null) {
 
-        let filtered = [];
-        let lastEnd = 0;
+            const clause = expandClause(text, m.index);
 
-        for (let match of matches) {
-            if (match.start >= lastEnd) {
-                filtered.push(match);
-                lastEnd = match.end;
-            }
+            const clauseText = text.slice(clause.start, clause.end);
+
+            processed = processed.replace(clauseText, `<metaphor>${clauseText}</metaphor>`);
         }
 
-        // ----------------------------
-        // 4. BUILD XML OUTPUT
-        // ----------------------------
-
-        annotatedXML += "<paragraph>";
-
-        let cursor = 0;
-
-        filtered.forEach(m => {
-
-            annotatedXML += escapeXML(text.slice(cursor, m.start));
-            annotatedXML += `<${m.tag}>${escapeXML(m.text)}</${m.tag}>`;
-            cursor = m.end;
-        });
-
-        annotatedXML += escapeXML(text.slice(cursor));
-        annotatedXML += "</paragraph>";
+        xml += processed;
+        xml += "</paragraph>";
     });
 
-    annotatedXML += "</book>";
-    return annotatedXML;
+    xml += "</book>";
+    return xml;
 }
 
-// ----------------------------
-// CLAUSE EXPANSION ENGINE
-// ----------------------------
+// -------------------------
 
-function expandToClause(text, index) {
+function expandClause(text, index) {
 
-    // find start of sentence
     const before = text.slice(0, index);
     const after = text.slice(index);
 
-    let start = before.lastIndexOf(".");
-    let q = before.lastIndexOf("?");
-    let e = before.lastIndexOf("!");
-
-    start = Math.max(start, q, e);
+    let start = Math.max(
+        before.lastIndexOf("."),
+        before.lastIndexOf("?"),
+        before.lastIndexOf("!")
+    );
 
     start = start === -1 ? 0 : start + 1;
 
-    // find end of sentence
-    const endPeriod = after.search(/[.!?]/);
-
-    const end = endPeriod === -1 ? text.length : index + endPeriod;
+    const endRel = after.search(/[.!?]/);
+    const end = endRel === -1 ? text.length : index + endRel;
 
     return { start, end };
-}
-
-// ----------------------------
-
-function escapeXML(str) {
-    return str
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;");
 }
