@@ -1,85 +1,63 @@
-/* GENERAL PAGE STYLING */
+
+/* =========================
+   BASE LAYOUT
+========================= */
+
 body {
-    font-family: Arial, Helvetica, sans-serif;
-    background-color: #f4f4f4;
-    color: #333;
-    margin: 0;
-    padding: 20px;
-}
-
-h1 {
-    text-align: center;
-    color: #5a2d82;
-}
-
-/* TEXT CONTAINER */
-#novel-text {
-    max-width: 800px;
-    margin: 0 auto;
-    background: white;
-    padding: 20px;
-    line-height: 1.6em;
-    box-shadow: 0 0 10px rgba(0,0,0,0.1);
-}
-
-#novel-text p {
+    font-family: Arial, sans-serif;
     margin: 0;
     padding: 0;
-    line-height: 1.5;
-}
-/* PARAGRAPHS */
-
-p {
-    margin-bottom: 1em;
 }
 
-/* FIGURATIVE LANGUAGE STYLING */
-simile {
-    border-bottom: 3px solid #2a6df4;
-    cursor: pointer;
-}
+/* =========================
+   ANALYSIS PANEL
+========================= */
 
-metaphor {
-    background-color: #ffd6d6;
-    padding: 2px 3px;
-    border-radius: 3px;
-    cursor: pointer;
-}
-
-simile:hover {
-    background-color: #e6f0ff;
-}
-
-metaphor:hover {
-    background-color: #ffb3b3;
-}
-
-/* SEARCH PANEL */
 #analysis-panel {
-    max-width: 800px;
-    margin: 20px auto;
     background: #f7f7f7;
     border: 1px solid #ddd;
     padding: 15px;
+    margin-bottom: 20px;
 }
+
+/* =========================
+   SEARCH BAR
+========================= */
 
 #figure-search {
     width: 100%;
     padding: 8px;
-    margin-bottom: 10px;
     font-size: 16px;
 }
 
 #search-results {
-    max-height: 300px;
+    list-style: none;
+    padding: 0;
+    max-height: 250px;
     overflow-y: auto;
 }
 
 #search-results li {
     cursor: pointer;
-    margin-bottom: 6px;
+    padding: 4px;
 }
 
 #search-results li:hover {
     text-decoration: underline;
+}
+
+/* =========================
+   FIGURATIVE LANGUAGE
+========================= */
+
+.simile {
+    border-bottom: 2px solid #2a6df4;
+    cursor: pointer;
+}
+
+.metaphor {
+    background: #ffd6d6;
+    padding: 2px 3px;
+    border-radius: 3px;
+    cursor: pointer;
 }
