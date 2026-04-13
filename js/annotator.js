@@ -5,7 +5,6 @@ export function annotateXML(paragraphs) {
     Array.from(paragraphs).forEach((p, pIndex) => {
 
         const text = p.textContent;
-
         let tags = [];
 
         // -------------------------
@@ -24,7 +23,7 @@ export function annotateXML(paragraphs) {
         }
 
         // -------------------------
-        // METAPHORS (TIGHTENED)
+        // METAPHORS (with semantic filtering)
         // -------------------------
         const triggerRegex =
             /\b(is|are|was|were|became|becomes)\s+(a|an|the)\s+/gi;
@@ -32,10 +31,12 @@ export function annotateXML(paragraphs) {
         while ((m = triggerRegex.exec(text)) !== null) {
 
             const clause = expandClause(text, m.index);
-
             const clauseText = text.slice(clause.start, clause.end);
 
-            // optional filter: avoid tiny noise + overly large chunks
+            // 🔥 FILTER 1: remove literal statements
+            if (isLikelyLiteral(clauseText)) continue;
+
+            // 🔥 FILTER 2: avoid tiny noise
             if (clauseText.split(" ").length < 4) continue;
 
             tags.push({
@@ -64,7 +65,7 @@ export function annotateXML(paragraphs) {
         }
 
         // -------------------------
-        // BUILD OUTPUT (SAFE)
+        // BUILD XML SAFELY
         // -------------------------
         let result = "";
         let cursor = 0;
@@ -89,7 +90,7 @@ export function annotateXML(paragraphs) {
     return xml;
 
     // -------------------------
-    // CLAUSE EXPANSION (SAFE + LIMITED)
+    // CLAUSE EXPANSION
     // -------------------------
     function expandClause(text, index) {
 
@@ -112,14 +113,47 @@ export function annotateXML(paragraphs) {
             end = index + end;
         }
 
-        // HARD LIMIT (prevents paragraph swallowing)
+        // hard safety cap
         const MAX_LENGTH = 120;
-
         if (end - start > MAX_LENGTH) {
             end = start + MAX_LENGTH;
         }
 
         return { start, end };
+    }
+
+    // -------------------------
+    // SEMANTIC FILTER (KEY ADDITION)
+    // -------------------------
+    function isLikelyLiteral(clauseText) {
+
+        const lower = clauseText.toLowerCase();
+
+        // 1. simple identity pattern
+        if (/^[a-z]+\s+(is|was|are|were)\s+(a|an|the)?\s?[a-z]+/.test(lower)) {
+            return true;
+        }
+
+        // 2. adjective-only predicate
+        if (/\b(is|was|are|were)\s+\w+$/.test(lower)) {
+            return true;
+        }
+
+        // 3. known literal roles / occupations
+        const literalRoles = [
+            "man", "woman", "boy", "girl",
+            "doctor", "artist", "writer",
+            "gentleman", "lady", "friend",
+            "student", "teacher"
+        ];
+
+        for (let role of literalRoles) {
+            if (lower.includes(` is a ${role}`) || lower.includes(` was a ${role}`)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     // -------------------------
