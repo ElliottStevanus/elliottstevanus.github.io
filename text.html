@@ -11,20 +11,81 @@
 <body>
 
 <nav>
-<a href="index.html">Home</a>
-<a href="text.html">Text</a>
+    <a href="index.html">Home</a>
+    <a href="text.html">Text</a>
 </nav>
 
 <h1>The Picture of Dorian Gray</h1>
 
+<!-- VIEW CONTROLS -->
+<div id="controls">
+    <button id="view-reading">Reading</button>
+    <button id="view-metaphor">Metaphor View</button>
+    <button id="view-analysis">Analysis</button>
+</div>
+
+<!-- ANALYSIS PANEL -->
 <div id="analysis-panel">
-    <input type="text" id="figure-search" placeholder="Search figurative language...">
+    <input type="text" id="figure-search" placeholder="Search metaphors...">
     <ul id="search-results"></ul>
 </div>
 
+<!-- MAIN TEXT -->
 <div id="novel-text">Loading text...</div>
 
-<script src="js/script.js"></script>
+<!-- XSLT -->
+<script id="metaphor-xsl" type="text/xsl">
+<?xml version="1.0" encoding="UTF-8"?>
+
+<xsl:stylesheet version="1.0"
+    xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+
+    <xsl:output method="html" encoding="UTF-8" indent="yes"/>
+
+    <xsl:template match="/">
+
+        <div class="metaphor-view">
+
+            <h2>Metaphor-Only View</h2>
+
+            <!-- Loop through paragraphs -->
+            <xsl:for-each select="//paragraph">
+
+                <!-- Store full paragraph text -->
+                <xsl:variable name="context" select="normalize-space(.)"/>
+
+                <!-- Loop through metaphors inside paragraph -->
+                <xsl:for-each select=".//metaphor">
+
+                    <div class="metaphor-item">
+
+                        <!-- Store context safely as attribute -->
+                        <xsl:attribute name="data-context">
+                            <xsl:value-of select="$context"/>
+                        </xsl:attribute>
+
+                        <!-- Store paragraph index -->
+                        <xsl:attribute name="data-paragraph">
+                            <xsl:value-of select="position()"/>
+                        </xsl:attribute>
+
+                        <!-- Display metaphor text -->
+                        <xsl:value-of select="normalize-space(.)"/>
+
+                    </div>
+
+                </xsl:for-each>
+
+            </xsl:for-each>
+
+        </div>
+
+    </xsl:template>
+
+</xsl:stylesheet></script>
+
+<!-- MAIN SCRIPT -->
+<script type="module" src="js/script.js"></script>
 
 </body>
 </html>
