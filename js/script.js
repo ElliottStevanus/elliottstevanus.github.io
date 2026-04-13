@@ -3,72 +3,71 @@ document.addEventListener("DOMContentLoaded", function () {
     let figureID = 0;
     let figures = [];
 
-    fetch("Text/dorian_gray.xml")
-        .then(res => {
-            if (!res.ok) throw new Error("XML load failed");
-            return res.text();
-        })
-        .then(str => {
+    const patterns = [
+        { regex: /\bas\s+[a-zA-Z'-]+\s+as\s+[a-zA-Z'-]+\b/gi, tag: "simile" },
+        { regex: /\blike\s+(?:a|an|the)\s+[a-zA-Z'-]+\b/gi, tag: "simile" },
+        { regex: /\blike\s+(?:a|an|the)\s+[a-zA-Z'-]+(?:\s+[a-zA-Z'-]+){0,5}/gi, tag: "simile" },
+        { regex: /\b(?:was|were|is|are|became|becomes)\s+(?:a|an|the)\s+[a-zA-Z'-]+\b/gi, tag: "metaphor" },
+        { regex: /\bas\s+if\s+[^.!?]+/gi, tag: "simile" },
+        { regex: /\b[a-zA-Z'-]+\s+of\s+[a-zA-Z'-]+\b/gi, tag: "metaphor" }
+    ];
 
-            const parser = new DOMParser();
-            const xml = parser.parseFromString(str, "text/xml");
+    function normalizeText(text) {
+        return text.replace(/\s+/g, " ");
+    }
 
-            const paragraphs = xml.getElementsByTagName("paragraph");
+    //  wait until XSLT has rendered content
+    function processText() {
 
-            function normalizeText(text) {
-                return text.replace(/\s+/g, " ");
-            }
+        const paragraphs = document.querySelectorAll("#novel-text p");
 
-            const patterns = [
-                { regex: /\bas\s+[a-zA-Z'-]+\s+as\s+[a-zA-Z'-]+\b/gi, tag: "simile" },
-                { regex: /\blike\s+(?:a|an|the)\s+[a-zA-Z'-]+\b/gi, tag: "simile" },
-                { regex: /\blike\s+(?:a|an|the)\s+[a-zA-Z'-]+(?:\s+[a-zA-Z'-]+){0,5}/gi, tag: "simile" },
-                { regex: /\b(?:was|were|is|are|became|becomes)\s+(?:a|an|the)\s+[a-zA-Z'-]+\b/gi, tag: "metaphor" },
-                { regex: /\bas\s+if\s+[^.!?]+/gi, tag: "simile" },
-                { regex: /\b[a-zA-Z'-]+\s+of\s+[a-zA-Z'-]+\b/gi, tag: "metaphor" }
-            ];
+        if (paragraphs.length === 0) {
+            // Try again if XSLT hasn't finished yet
+            setTimeout(processText, 100);
+            return;
+        }
 
-            let output = "";
+        paragraphs.forEach(p => {
 
-            for (let i = 0; i < paragraphs.length; i++) {
+            let text = normalizeText(p.innerHTML);
 
-                let text = normalizeText(paragraphs[i].textContent);
+            patterns.forEach(pattern => {
+                text = text.replace(pattern.regex, match => {
 
-                patterns.forEach(p => {
-                    text = text.replace(p.regex, match => {
+                    figureID++;
+                    const id = "figure-" + figureID;
 
-                        figureID++;
-                        const id = "figure-" + figureID;
-
-                        figures.push({
-                            type: p.tag,
-                            text: match,
-                            id: id
-                        });
-
-                        return `<${p.tag} id="${id}">${match}</${p.tag}>`;
+                    figures.push({
+                        type: pattern.tag,
+                        text: match,
+                        id: id
                     });
+
+                    return `<${pattern.tag} id="${id}">${match}</${pattern.tag}>`;
                 });
+            });
 
-                output += `<p>${text}</p>`;
-            }
-
-            // DIRECT RENDER (NO XML REBUILD, NO XSLT REQUIRED)
-            document.getElementById("novel-text").innerHTML = output;
-
-            setupSearch(figures);
-        })
-        .catch(err => {
-            console.error("PIPELINE ERROR:", err);
-            document.getElementById("novel-text").innerHTML =
-                "<p>Failed to load text. Check console.</p>";
+            p.innerHTML = text;
         });
 
+        console.log("Figures detected:", figures.length);
 
+        setupSearch(figures);
+    }
+
+    processText();
+
+
+    // search system
     function setupSearch(figures) {
 
         const searchBox = document.getElementById("figure-search");
         const resultsList = document.getElementById("search-results");
+
+        if (!searchBox || !resultsList) {
+            console.log("Search UI not found");
+            return;
+        }
 
         searchBox.addEventListener("input", function () {
 
@@ -85,6 +84,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     li.textContent = fig.text;
 
                     li.addEventListener("click", function () {
+
                         const target = document.getElementById(fig.id);
 
                         if (target) {
@@ -93,11 +93,14 @@ document.addEventListener("DOMContentLoaded", function () {
                                 block: "center"
                             });
                         }
+
                     });
 
                     resultsList.appendChild(li);
                 }
+
             });
+
         });
     }
 
