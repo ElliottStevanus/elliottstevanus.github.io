@@ -4,7 +4,7 @@ document.addEventListener("DOMContentLoaded", function () {
     let figures = [];
 
     const parser = new DOMParser();
-
+console.log(newDoc.documentElement.outerHTML);
     fetch("Text/dorian_gray.xml")
         .then(res => {
             if(!res.ok) throw new Error("XML load failed");
