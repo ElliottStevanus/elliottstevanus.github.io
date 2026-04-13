@@ -1,39 +1,51 @@
-export function setupUI(container, annotatedDoc) {
+export function setupUI({ container, annotatedDoc, runXSLT }) {
 
     const searchBox = document.getElementById("figure-search");
     const resultsList = document.getElementById("search-results");
 
-    function bindSearch() {
+    // -------------------------
+    // VIEW BUTTONS
+    // -------------------------
 
-        searchBox.addEventListener("input", () => {
+    document.getElementById("view-reading").onclick = () =>
+        runXSLT("xsl/reading.xsl", annotatedDoc, container);
 
-            const query = searchBox.value.toLowerCase();
-            resultsList.innerHTML = "";
+    document.getElementById("view-metaphor").onclick = () =>
+        runXSLT("xsl/metaphor.xsl", annotatedDoc, container);
 
-            if (!query) return;
+    document.getElementById("view-analysis").onclick = () =>
+        runXSLT("xsl/analysis.xsl", annotatedDoc, container);
 
-            const metaphors = annotatedDoc.getElementsByTagName("metaphor");
+    // -------------------------
+    // SEARCH
+    // -------------------------
 
-            Array.from(metaphors).forEach(m => {
+    searchBox.addEventListener("input", () => {
 
-                if (m.textContent.toLowerCase().includes(query)) {
+        const query = searchBox.value.toLowerCase();
+        resultsList.innerHTML = "";
 
-                    const li = document.createElement("li");
-                    li.textContent = m.textContent;
+        if (!query) return;
 
-                    li.onclick = () => {
-                        alert(
-                            m.textContent +
-                            "\n\n" +
-                            m.parentNode.textContent
-                        );
-                    };
+        const metaphors = annotatedDoc.getElementsByTagName("metaphor");
 
-                    resultsList.appendChild(li);
-                }
-            });
+        Array.from(metaphors).forEach(m => {
+
+            if (m.textContent.toLowerCase().includes(query)) {
+
+                const li = document.createElement("li");
+                li.textContent = m.textContent;
+
+                li.onclick = () => {
+                    alert(
+                        m.textContent +
+                        "\n\n" +
+                        (m.parentNode?.textContent || "")
+                    );
+                };
+
+                resultsList.appendChild(li);
+            }
         });
-    }
-
-    bindSearch();
+    });
 }
