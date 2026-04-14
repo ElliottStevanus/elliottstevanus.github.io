@@ -63,15 +63,15 @@
     <h1>Literary Analysis Engine Project</h1>
 </header>
 
-    <nav>
-<a href="index.html">Home</a>
-<a href="text.html">Text</a>
-<a href="index.html#themes">Themes</a>
-<a href="index.html#analysis">Analysis</a>
-<a href="project.html">Project</a>
-<a href="index.html#about">About</a>
+<nav>
+    <a href="index.html">Home</a>
+    <a href="text.html">Text</a>
+    <a href="index.html#themes">Themes</a>
+    <a href="index.html#analysis">Analysis</a>
+    <a href="project.html">Project</a>
+    <a href="index.html#about">About</a>
 </nav>
-    
+
 <div class="container">
 
     <div class="meta">
@@ -90,29 +90,25 @@
 
     <p>
         The goal is to compile figurative language results and compare similarities 
-        between them — identifying recurring words, shared imagery, and patterns. 
+        between them — identifying recurring words, shared imagery, and patterns by.
         This allows for clearer visualization of Wilde’s image system and stylistic tendencies.
     </p>
 
-    <h2>Ambitious Version</h2>
+    <h2>Methodologies</h2>
 
     <p>
-        The most ambitious version of this project envisions a highly interactive website.
-        Users would be able to:
+        The workflow begins with the source XML, which contains the raw text segmented into &lt;paragraph&gt; elements. This file is loaded into script.js, which, and passed into annotator.js. The annotator uses regex to find similes and metaphors (or something close to them). Importantly, when those matches with the regex are made, they are expanded into short clauses and wrapped in semantic tags such as &lt;simile&gt; and &lt;metaphor&gt;, so a little context is later visible in the search engine. The output is a newly constructed annotated XML string, which is then parsed back into a DOM object (annotatedDoc). This method was used to create the metaphor tags rather than marking up the xml file directly as this code could theoretically apply to any xml file, so if the site is expanded to allow users to input their own text, it would be able to help them search for metaphors in it.
     </p>
-
-    <ul>
-        <li>Click on any highlighted word within a metaphor or simile</li>
-        <li>See how frequently it appears in other figurative constructions</li>
-        <li>Compare usage across metaphors, similes, and other textual contexts</li>
-        <li>Navigate dynamically through the text based on recurring imagery</li>
-    </ul>
 
     <p>
-        This would allow readers to explore Wilde’s symbolic and imagistic structure
-        as a connected system rather than isolated examples.
+        The actual core of the website, where the interaction happens, comes from within script.js, which loads an XSL stylesheet, applies it to the annotated XML, and injects the resulting HTML into the page. There are three different XSL files, one per view point in the text page of the website, but they all look at the same underlying data. Reading view groups sentence-level paragraphs into larger blocks and uses template rules to convert &lt;metaphor&gt; and &lt;simile&gt; elements into styled HTML spans, preserving their semantic meaning visually by highlighting them.
     </p>
 
+    <p>
+        Finally, ui.js provides the interaction layer, connecting user input to the annotated document. It queries the annotatedDoc (the database created by parsing the text into a DOM object), based on user inputs in a search bar. The two other views/xsl stylesheets, metaphor view and analysis view, show only the text tagged as metaphor (in the case of metaphor view) and only the sections of the novel which contain words related to the users search (analysis view, still under construction). Generally: script.js orchestrates loading and transformation, annotator.js marks up the text to create metaphor/simile tags, and ui.js enables the user interface.
+    </p>
+
+  
     <h2>Primary Text Source</h2>
 
     <p>
@@ -124,10 +120,6 @@
     </p>
 
 </div>
-
-<footer>
-    &copy; 2026 InterpretDorianGray.com
-</footer>
 
 </body>
 </html>
