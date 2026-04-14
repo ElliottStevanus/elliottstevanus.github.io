@@ -1,45 +1,46 @@
 <!DOCTYPE html>
 <html lang="en"> 
 <head>
-    <script src="js/script.js" defer></script>
-
 <meta charset="UTF-8">
 <title>Interpret Dorian Gray | Literary Analysis</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="description" content="Interpret Dorian Gray explores themes, symbolism, and analysis of Oscar Wilde's The Picture of Dorian Gray.">
 
 <style>
 
 body{
     font-family: Arial, Helvetica, sans-serif;
-    background-color:#f4f4f4;
-    color:#333;
     margin:0;
     padding:0;
-    transition: filter 1s ease;
+    color:#333;
 }
 
-/* BLUR EFFECT WHEN SPLASH IS ACTIVE */
-body.splash-active .container,
-body.splash-active header,
-body.splash-active nav,
-body.splash-active footer {
-    filter: blur(6px);
-    pointer-events: none;
+/* =========================
+   FULL BACKGROUND IMAGE
+========================= */
+
+body::before {
+    content: "";
+    position: fixed;
+    top:0;
+    left:0;
+    width:100%;
+    height:100%;
+
+    background: url("doriangray.jpg") center/cover no-repeat;
+    opacity: 0.25;   /* 👈 transparency of image */
+    z-index: -1;
 }
 
-/* HEADER */
-header{
-    background-color:#5a2d82;
-    color:white;
-    padding:20px;
-    text-align:center;
-}
+/* =========================
+   NAVIGATION (always visible)
+========================= */
 
 nav{
+    position: relative;
     text-align:center;
-    background-color:#eeeeee;
+    background-color: rgba(238,238,238,0.9);
     padding:10px;
+    z-index: 10;
 }
 
 nav a{
@@ -53,13 +54,52 @@ nav a:hover{
     text-decoration:underline;
 }
 
+/* =========================
+   MAIN CONTENT
+========================= */
+
 .container{
     max-width:900px;
-    margin:20px auto;
-    background:white;
+    margin:40px auto;
+    background: rgba(255,255,255,0.9);
     padding:20px;
     box-shadow:0 0 10px rgba(0,0,0,0.1);
+    position: relative;
+    z-index: 2;
 }
+
+/* =========================
+   SPLASH HERO (homepage intro)
+========================= */
+
+#splash {
+    position: relative;
+    max-width: 800px;
+    margin: 80px auto 20px auto;
+    padding: 50px;
+    background: rgba(255,255,255,0.95);
+    text-align: center;
+
+    opacity: 0;
+    transform: translateY(20px);
+    animation: fadeIn 2s ease forwards;
+}
+
+#splash h1 {
+    color:#5a2d82;
+}
+
+/* fade in animation */
+@keyframes fadeIn {
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* =========================
+   TEXT STYLES
+========================= */
 
 h1,h2,h3{
     color:#5a2d82;
@@ -67,24 +107,6 @@ h1,h2,h3{
 
 p{
     line-height:1.6em;
-}
-
-img{
-    display:block;
-    margin:20px auto;
-    max-width:100%;
-    height:auto;
-    border:5px solid #ddd;
-}
-
-ul{
-    background-color:#f0f0f0;
-    padding:15px;
-}
-
-.highlight{
-    color:#990000;
-    font-weight:bold;
 }
 
 .quote{
@@ -103,145 +125,46 @@ footer{
     margin-top:20px;
 }
 
-@media(max-width:768px){
-.container{
-margin:10px;
-padding:15px;
-}
-}
-
-/* =========================
-   SPLASH OVERLAY
-========================= */
-
-#splash {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(244, 241, 234, 0.98);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 9999;
-}
-
-.splash-card {
-    max-width: 700px;
-    background: white;
-    padding: 40px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.15);
-    border-radius: 10px;
-    text-align: center;
-    animation: fadeIn 1s ease;
-}
-
-.splash-card ul {
-    text-align: left;
-}
-
-#countdown {
-    margin-top: 20px;
-    font-weight: bold;
-    color: #5a2d82;
-    cursor: pointer;
-}
-
-.fade-out {
-    opacity: 0;
-    transition: opacity 1s ease;
-    pointer-events: none;
-}
-
-@keyframes fadeIn {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
-}
-
 </style>
 </head>
 
-<body class="splash-active">
+<body>
 
-<!-- =========================
-     SPLASH MODAL
-========================= -->
-<div id="splash">
-    <div class="splash-card">
-        <h1>Literary Analysis Engine</h1>
-
-        <p>
-            The goal of this website is to help readers explore Wilde’s symbolic and image structures as a connected system rather than isolated examples.
-        </p>
-
-        <p>To do so:</p>
-
-        <ul>
-            <li>Navigate to the “Text” page using the navigation above</li>
-            <li>Click on any highlighted word within a metaphor or simile</li>
-            <li>See how it appears elsewhere in the novel</li>
-            <li>Navigate dynamically through the text based on recurring imagery</li>
-        </ul>
-
-        <p id="countdown">Entering site in 10... (click to enter now)</p>
-    </div>
-</div>
-
+<!-- NAVIGATION -->
 <nav>
-<a href="index.html">Home</a>
-<a href="text.html">Text</a>
-<a href="project.html">Project</a>
+    <a href="index.html">Home</a>
+    <a href="text.html">Text</a>
+    <a href="project.html">Project</a>
 </nav>
 
+<!-- SPLASH HERO (NOW THE HOMEPAGE INTRO) -->
+<div id="splash">
+
+    <h1>Literary Analysis Engine</h1>
+
+    <p>
+        The goal of this website is to help readers explore Wilde’s symbolic and image structures as a connected system rather than isolated examples.
+    </p>
+
+    <p>To do so:</p>
+
+    <ul style="text-align:left;">
+        <li>Navigate to the “Text” page using the navigation above</li>
+        <li>Click on highlighted metaphor and simile phrases</li>
+        <li>See how ideas recur across the novel</li>
+        <li>Explore recurring imagery dynamically</li>
+    </ul>
+
+</div>
+
+<!-- MAIN CONTENT -->
 <div class="container">
-
-<h2>Dorian Gray's Metaphor Tracker</h2>
-
-<img src="doriangray.jpg" alt="Dorian Gray Image">
-
-<h3>What is a metaphor tracker?</h3>
-<p>
-This project uses XML to create a website capable of detecting and analyzing metaphors and similes in 
-<em>The Picture of Dorian Gray</em> by Oscar Wilde. The goal is to compile figurative language results and 
-compare similarities between them — identifying recurring words, shared imagery, and patterns. This allows 
-for clearer visualization of Wilde’s image system and stylistic tendencies.
-</p>
 
 <div class="quote">
 "The only way to get rid of temptation is to yield to it."
 </div>
 
 </div>
-
-<script>
-let time = 10;
-const splash = document.getElementById("splash");
-const countdown = document.getElementById("countdown");
-
-function enterSite() {
-    splash.classList.add("fade-out");
-    document.body.classList.remove("splash-active");
-
-    setTimeout(() => {
-        splash.remove();
-    }, 1000);
-}
-
-/* countdown */
-const interval = setInterval(() => {
-    time--;
-    countdown.textContent = `Entering site in ${time}... (click to enter now)`;
-
-    if (time <= 0) {
-        clearInterval(interval);
-        enterSite();
-    }
-}, 1000);
-
-/* click to skip */
-splash.addEventListener("click", enterSite);
-</script>
 
 </body>
 </html>
