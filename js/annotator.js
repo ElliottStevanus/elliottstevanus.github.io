@@ -8,13 +8,13 @@ export function annotateXML(paragraphs) {
         let tags = [];
 
        
-        const simileRegex =
             // as ... as ...
-            /\bas\s+[^.!?]+?\s+as\s+[^.!?]+|
-            //  like a/an/the ...
-            like\s+(a|an|the)\s+[^.!?]+|
+          //  like a/an/the ...
             //  "as if ..."
-            as\s+if\s+[^.!?]+/gi;
+        const simileRegex =
+/\b(as\s+[^.!?]+?\s+as\s+[^.!?]+|like\s+(a|an|the)\s+[^.!?]+|as\s+if\s+[^.!?]+)/gi;
+          
+          
 
         let m;
         // Scan through all simile matches in the text
@@ -133,7 +133,7 @@ export function annotateXML(paragraphs) {
     }
 
     // FILTERS!!!
-    function isLikelyLiteral(clauseText) 
+    function isLikelyLiteral(clauseText) {
 
         const lower = clauseText.toLowerCase();
 
