@@ -24,7 +24,10 @@ export function annotateXML(paragraphs) {
             tags.push({
                 start: m.index,                 // where match begins in text
                 end: m.index + m[0].length,     // where match ends, this gives position to rebuild xml with new tags
-                type: "simile"                  // tag type
+                type: "simile",
+
+                //  subtype so XSLT/SVG can classify
+                subtype: "simile_general"
             });
         }
 
@@ -45,10 +48,19 @@ export function annotateXML(paragraphs) {
             // if the full clause is too short, it probably is a literal statement. 
             if (clauseText.split(" ").length < 4) continue;
 
+            // classify metaphor
+            let subtype = "metaphor_is_a";
+            const verb = m[1].toLowerCase();
+
+            if (verb === "became" || verb === "becomes") {
+                subtype = "metaphor_becomes";
+            }
+
             tags.push({
                 start: clause.start,
                 end: clause.end,
-                type: "metaphor"
+                type: "metaphor",
+                subtype: subtype
             });
         }
 
@@ -79,7 +91,7 @@ export function annotateXML(paragraphs) {
             result += escapeXML(text.slice(cursor, t.start));
 
             // Wrap tagged text in XML element:
-            result += `<${t.type}>` +
+            result += `<${t.type} subtype="${t.subtype}">` +
                        escapeXML(text.slice(t.start, t.end)) +
                        `</${t.type}>`;
 
@@ -138,22 +150,28 @@ export function annotateXML(paragraphs) {
         const lower = clauseText.toLowerCase();
 
         // blank is a blank... might knock out some metaphors but I haven't found any yet and it lowers false postives significantly. Probably not a problem for Oscar Wilde
-    //writing style, which is usually much more flowery when using metaphor or simile
+        //writing style, which is usually much more flowery when using metaphor or simile
         if (/^[a-z]+\s+(is|was|are|were)\s+(a|an|the)?\s?[a-z]+/.test(lower)) {
             return true;
         }
-
-        // stops statements with adje from being metaphors
         if (/\b(is|was|are|were)\s+\w+$/.test(lower)) {
             return true;
         }
 
         // People were triggering the metaphor and simile checks a lot because _ is a _ 
         const literalRoles = [
-            "man", "woman", "boy", "girl",
-            "doctor", "artist", "writer",
-            "gentleman", "lady", "friend",
-            "student", "teacher"
+            "man",
+            "woman",
+            "boy",
+            "girl",
+            "doctor",
+            "artist",
+            "writer",
+            "gentleman",
+            "lady",
+            "friend",
+            "student",
+            "teacher"
         ];
 
         // if it is a literal role = not metaphor. lower is there to standardize it (lowercase)
@@ -168,7 +186,7 @@ export function annotateXML(paragraphs) {
     }
 
     // prevents broken xml 
-      function escapeXML(str) {
+    function escapeXML(str) {
         return str
             .replace(/&/g, "&amp;")  
             .replace(/</g, "&lt;")  
