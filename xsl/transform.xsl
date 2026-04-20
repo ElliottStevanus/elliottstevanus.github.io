@@ -124,11 +124,6 @@ p {
         <button id="view-analysis">Analysis</button>
     </div>
 
-    <div id="analysis-panel">
-        <input type="text" id="figure-search" placeholder="Search metaphors..."/>
-        <ul id="search-results"></ul>
-    </div>
-
     <!-- ========================= -->
     <!-- READING VIEW -->
     <!-- ========================= -->
