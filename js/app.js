@@ -222,9 +222,8 @@ function renderGraph(word) {
 
     label.setAttribute("x", 50 + i * 100);
     label.setAttribute("y", 270);
-  label.setAttribute("text-anchor", "middle"); 
+ label.textContent = w;
     svg.appendChild(label);
-
   });
 
   const container = document.getElementById("graph-container");
