@@ -74,21 +74,21 @@ p {
 }
 
 /* FIGURATIVE LANGUAGE */
-.metaphor {
+metaphor {
     background: rgba(255, 200, 0, 0.35);
     padding: 2px 4px;
     border-radius: 4px;
     cursor: pointer;
 }
 
-.simile {
+simile {
     background: rgba(100, 160, 255, 0.35);
     padding: 2px 4px;
     border-radius: 4px;
     cursor: pointer;
 }
 
-.aphorism {
+aphorism {
     background: rgba(180, 255, 180, 0.35);
     padding: 2px 4px;
     border-radius: 4px;
