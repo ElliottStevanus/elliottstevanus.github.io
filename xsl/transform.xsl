@@ -180,13 +180,19 @@ p {
 
 <xsl:template match="metaphor | simile | aphorism">
 
-<span class="{name()}"
-      data-type="{name()}"
-      data-sentence="p-{count(ancestor::paragraph/preceding::paragraph) + 1}">
+  <xsl:element name="{name()}">
+
+    <xsl:attribute name="data-type">
+      <xsl:value-of select="name()"/>
+    </xsl:attribute>
+
+    <xsl:attribute name="data-sentence">
+      <xsl:value-of select="concat('p-', count(ancestor::paragraph/preceding::paragraph) + 1)"/>
+    </xsl:attribute>
 
     <xsl:apply-templates/>
 
-</span>
+  </xsl:element>
 
 </xsl:template>
 
