@@ -25,7 +25,7 @@ nav {
     background: #222;
 }
 
-/* links style
+/* links style*/
 nav a {
     color: white;
     text-decoration: none;
