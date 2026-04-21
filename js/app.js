@@ -24,7 +24,7 @@ document.addEventListener("DOMContentLoaded", () => {
 function cacheDocument() {
   const items = document.querySelectorAll('metaphor, simile, aphorism');
 
-  // Convert NodeList → Array and map into structured JS objects
+  // Convert list of nodes into an array and map into structured JS objects that it can pull
   App.graphCache = Array.from(items).map(el => ({
     el,  // store the actual DOM node (important for clicking + navigation)
 
