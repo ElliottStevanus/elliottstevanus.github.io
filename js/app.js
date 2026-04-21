@@ -149,10 +149,6 @@ function openAnalysis(el) {
     .textContent = paragraph.textContent;
   // build clickable word buttons from sentence
   buildWordPanel(paragraph.textContent);
-
-  // not sure why this is here, we aren't in the reading view anymore.
-  paragraph.scrollIntoView({ behavior: "smooth", block: "center" });
-
 }
 
 
@@ -164,7 +160,7 @@ function buildWordPanel(text) {
   const words = tokenize(text);
   const panel = document.getElementById("word-panel");
 
-  panel.innerHTML = ""; // clear old buttons (why is this here?)
+  panel.innerHTML = ""; // clear old buttons each time you click a new word
   words.forEach(word => {
 
     const btn = document.createElement("button");
@@ -178,7 +174,7 @@ function buildWordPanel(text) {
 
     });
 
-    panel.appendChild(btn); //not sure what this is
+    panel.appendChild(btn); //shows button on page
 
   });
 
@@ -202,7 +198,7 @@ function computeCooccurrence(word) {
       if (!counts[w]) {
         counts[w] = {
           total: 0,     // frequency count
-          types: new Set() // tracks word set diversity (not sure what this means practically)
+          types: new Set() // tracks word set diversity to see if it gets the bonus
         };
       }
 
@@ -243,16 +239,14 @@ function renderGraph(word) {
 
   const barSpacing = 100;
   const baseOffset = 50;
-  const width = baseOffset + entries.length * barSpacing; //not sure what this is
+  const width = baseOffset + entries.length * barSpacing; //dynamically increases bar spacing based on number of entries, in case we change how many
 
   svg.setAttribute("width", width);
   svg.setAttribute("height", "300");
 
-  entries.forEach(([w, count], i) => {//not sure what this is
-
+  entries.forEach(([w, count], i) => {//for each word count, index it for the bar
     // draw bar
     const rect = document.createElementNS(svgNS, "rect");
-
     rect.setAttribute("x", 50 + i * 100);
     rect.setAttribute("y", 250 - count * 20);
     rect.setAttribute("width", 20);
@@ -271,15 +265,14 @@ function renderGraph(word) {
     label.setAttribute("y", 270);
     label.textContent = w;
 
-    svg.appendChild(label); //not sure what this is
+    svg.appendChild(label);
 
   });
 
-  // insert SVG into DOM, not sure why this is necessary
+  // actually shows the graph
   const container = document.getElementById("graph-container");
   container.innerHTML = "";
   container.appendChild(svg);
-
 }
 
 
@@ -288,7 +281,7 @@ function renderGraph(word) {
 function openMetaphorView(wordA, wordB) {
   showView("metaphor-view");
   const results = App.sentenceCache.filter(entry =>
-    entry.words.includes(wordA) && //not sure what this is
+    entry.words.includes(wordA) && //sentences where both words show up
     entry.words.includes(wordB)
   );
 
@@ -317,7 +310,7 @@ function openMetaphorView(wordA, wordB) {
 
     });
 
-    container.appendChild(div); //not sure what this is
+    container.appendChild(div); 
 
   });
 
